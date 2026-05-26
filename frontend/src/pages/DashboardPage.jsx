@@ -11,8 +11,14 @@ import {
   Spin,
   Alert,
   Popconfirm,
+  Modal,
+  Form,
+  Input,
+  Select,
+  InputNumber,
+  message,
 } from 'antd'
-import { LogoutOutlined, DeleteOutlined, EditOutlined } from '@ant-design/icons'
+import { LogoutOutlined, DeleteOutlined, EditOutlined, PlusOutlined } from '@ant-design/icons'
 import { useAuth } from '../context/AuthContext'
 import { useNavigate } from 'react-router-dom'
 import api from '../services/api'
@@ -20,13 +26,31 @@ import '../styles/DashboardPage.css'
 
 const { Header, Content } = Layout
 
+const CATEGORIES = [
+  { label: 'Laptop', value: 'Laptop' },
+  { label: 'Server', value: 'Server' },
+  { label: 'Monitor', value: 'Monitor' },
+  { label: 'Networking', value: 'Networking' },
+]
+
+const STATUSES = [
+  { label: 'Active', value: 'Active' },
+  { label: 'In Repair', value: 'In Repair' },
+  { label: 'Retired', value: 'Retired' },
+]
+
 export default function DashboardPage() {
   const { user, logout } = useAuth()
   const navigate = useNavigate()
+  const [form] = Form.useForm()
   const [assets, setAssets] = useState([])
   const [report, setReport] = useState(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
+  const [modalVisible, setModalVisible] = useState(false)
+  const [modalMode, setModalMode] = useState('create')
+  const [editingAsset, setEditingAsset] = useState(null)
+  const [submitting, setSubmitting] = useState(false)
 
   useEffect(() => {
     fetchData()
@@ -56,12 +80,63 @@ export default function DashboardPage() {
     navigate('/login')
   }
 
+  const openCreateModal = () => {
+    setModalMode('create')
+    setEditingAsset(null)
+    form.resetFields()
+    setModalVisible(true)
+  }
+
+  const openEditModal = (asset) => {
+    setModalMode('edit')
+    setEditingAsset(asset)
+    form.setFieldsValue({
+      asset_tag: asset.asset_tag,
+      name: asset.name,
+      category: asset.category,
+      status: asset.status,
+      location: asset.location,
+      value: asset.value,
+    })
+    setModalVisible(true)
+  }
+
+  const handleModalClose = () => {
+    setModalVisible(false)
+    form.resetFields()
+    setEditingAsset(null)
+  }
+
+  const handleModalSubmit = async (values) => {
+    setSubmitting(true)
+
+    try {
+      if (modalMode === 'create') {
+        await api.post('/assets', values)
+        message.success('Asset created successfully')
+      } else {
+        await api.put(`/assets/${editingAsset.id}`, values)
+        message.success('Asset updated successfully')
+      }
+
+      handleModalClose()
+      await fetchData()
+    } catch (err) {
+      const errorMsg = err.response?.data?.error || 'Operation failed'
+      message.error(errorMsg)
+    } finally {
+      setSubmitting(false)
+    }
+  }
+
   const handleDelete = async (id) => {
     try {
       await api.delete(`/assets/${id}`)
-      setAssets(assets.filter((a) => a.id !== id))
+      message.success('Asset deleted successfully')
+      await fetchData()
     } catch (err) {
-      setError(err.response?.data?.error || 'Failed to delete asset')
+      const errorMsg = err.response?.data?.error || 'Failed to delete asset'
+      message.error(errorMsg)
     }
   }
 
@@ -119,7 +194,7 @@ export default function DashboardPage() {
             type="primary"
             size="small"
             icon={<EditOutlined />}
-            onClick={() => console.log('Edit', record.id)}
+            onClick={() => openEditModal(record)}
           />
           <Popconfirm
             title="Delete Asset"
@@ -214,7 +289,11 @@ export default function DashboardPage() {
           <Card>
             <div className="table-header">
               <h2>Asset Inventory</h2>
-              <Button type="primary" onClick={() => console.log('Create new')}>
+              <Button
+                type="primary"
+                icon={<PlusOutlined />}
+                onClick={openCreateModal}
+              >
                 Add New Asset
               </Button>
             </div>
@@ -228,6 +307,79 @@ export default function DashboardPage() {
           </Card>
         </Spin>
       </Content>
+
+      {/* Asset Modal */}
+      <Modal
+        title={modalMode === 'create' ? 'Create New Asset' : 'Edit Asset'}
+        open={modalVisible}
+        onCancel={handleModalClose}
+        onOk={() => form.submit()}
+        confirmLoading={submitting}
+        width={600}
+      >
+        <Form
+          form={form}
+          layout="vertical"
+          onFinish={handleModalSubmit}
+          autoComplete="off"
+        >
+          <Form.Item
+            label="Asset Tag"
+            name="asset_tag"
+            rules={[
+              { required: true, message: 'Asset Tag is required' },
+              { min: 3, message: 'Asset Tag must be at least 3 characters' },
+            ]}
+          >
+            <Input
+              placeholder="e.g., LLI-LAP-001"
+              disabled={modalMode === 'edit'}
+            />
+          </Form.Item>
+
+          <Form.Item
+            label="Asset Name"
+            name="name"
+            rules={[{ required: true, message: 'Asset Name is required' }]}
+          >
+            <Input placeholder="e.g., Dell Latitude 5540" />
+          </Form.Item>
+
+          <Form.Item
+            label="Category"
+            name="category"
+            rules={[{ required: true, message: 'Category is required' }]}
+          >
+            <Select placeholder="Select a category" options={CATEGORIES} />
+          </Form.Item>
+
+          <Form.Item
+            label="Status"
+            name="status"
+            rules={[{ required: true, message: 'Status is required' }]}
+          >
+            <Select placeholder="Select a status" options={STATUSES} />
+          </Form.Item>
+
+          <Form.Item label="Assigned To" name="location">
+            <Input placeholder="e.g., John Doe / IT Department" />
+          </Form.Item>
+
+          <Form.Item
+            label="Cost / Value"
+            name="value"
+            rules={[{ required: true, message: 'Cost is required' }]}
+          >
+            <InputNumber
+              prefix="$"
+              placeholder="0.00"
+              min={0}
+              step={0.01}
+              style={{ width: '100%' }}
+            />
+          </Form.Item>
+        </Form>
+      </Modal>
     </Layout>
   )
 }
