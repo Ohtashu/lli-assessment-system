@@ -37,7 +37,7 @@ INSERT INTO Users (name, email, password_hash, role)
 VALUES (
     'System Admin', 
     'admin@lli.com', 
-    '$2b$10$76bWn2Nq.uS87E2B0VjYGe.qL6L.E8Fz73u6m/b8E9R6D6Z7e9F7G', 
+    '$2a$12$GMe21.dtqE9x0X1Y.DeCKu.SnkmFD..KQRax05yjN6hwQgbBQmYHO', 
     'Admin'
 );
 GO

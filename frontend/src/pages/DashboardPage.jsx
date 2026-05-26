@@ -18,7 +18,7 @@ import {
   InputNumber,
   message,
 } from 'antd'
-import { LogoutOutlined, DeleteOutlined, EditOutlined, PlusOutlined } from '@ant-design/icons'
+import { DownloadOutlined, LogoutOutlined, DeleteOutlined, EditOutlined, PlusOutlined } from '@ant-design/icons'
 import { useAuth } from '../context/AuthContext'
 import { useNavigate } from 'react-router-dom'
 import api from '../services/api'
@@ -138,6 +138,44 @@ export default function DashboardPage() {
       const errorMsg = err.response?.data?.error || 'Failed to delete asset'
       message.error(errorMsg)
     }
+  }
+
+  const exportToCSV = () => {
+    const headers = ['Asset Tag', 'Asset Name', 'Status', 'Assigned To', 'Cost']
+
+    const escapeCSVValue = (value) => {
+      if (value === null || value === undefined || value === '') {
+        return ''
+      }
+
+      return `"${String(value).replace(/"/g, '""')}"`
+    }
+
+    const rows = (assets || []).map((asset) => [
+      escapeCSVValue(asset?.asset_tag),
+      escapeCSVValue(asset?.name),
+      escapeCSVValue(asset?.status),
+      escapeCSVValue(asset?.assigned_to),
+      escapeCSVValue(
+        asset?.cost === null || asset?.cost === undefined || asset?.cost === ''
+          ? ''
+          : Number(asset.cost).toFixed(2),
+      ),
+    ])
+
+    const csvContent = [headers.join(','), ...rows.map((row) => row.join(','))].join('\n')
+    const blob = new Blob([`\uFEFF${csvContent}`], { type: 'text/csv;charset=utf-8;' })
+    const url = window.URL.createObjectURL(blob)
+    const link = document.createElement('a')
+    const today = new Date()
+    const fileDate = today.toLocaleDateString('en-CA')
+
+    link.href = url
+    link.download = `asset_report_${fileDate}.csv`
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+    window.URL.revokeObjectURL(url)
   }
 
   const columns = [
@@ -295,6 +333,11 @@ export default function DashboardPage() {
                 onClick={openCreateModal}
               >
                 Add New Asset
+              </Button>
+            </div>
+            <div style={{ marginBottom: 16 }}>
+              <Button icon={<DownloadOutlined />} onClick={exportToCSV}>
+                Export CSV Report
               </Button>
             </div>
             <Table

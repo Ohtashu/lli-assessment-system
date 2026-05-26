@@ -20,6 +20,9 @@ export default function LoginPage() {
       navigate('/dashboard', { replace: true })
     } catch (err) {
       const errorMessage =
+        err.response?.status === 401
+          ? 'Wrong email or password. Please try again.'
+          :
         err.response?.data?.message ||
         err.response?.data?.error ||
         err.message ||
@@ -39,9 +42,9 @@ export default function LoginPage() {
 
         {error && (
           <Alert
-            message="Login Error"
+            message="Login Warning"
             description={error}
-            type="error"
+            type="warning"
             showIcon
             closable
             onClose={() => setError(null)}
