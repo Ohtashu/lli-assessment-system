@@ -3,6 +3,7 @@ const cors = require('cors');
 const pool = require('./config/db');
 const authRoutes = require('./routes/authRoutes');
 const assetRoutes = require('./routes/assetRoutes');
+const reportRoutes = require('./routes/reportRoutes');
 
 const app = express();
 
@@ -20,6 +21,7 @@ app.get('/health', (req, res) => {
 
 app.use('/api/auth', authRoutes);
 app.use('/api/assets', assetRoutes);
+app.use('/api/reports', reportRoutes);
 
 app.use((err, req, res, next) => {
   console.error('[Error]', err);

@@ -55,6 +55,9 @@ curl http://localhost:3001/health
 - `PUT /api/assets/:id` — Update asset
 - `DELETE /api/assets/:id` — Delete asset
 
+### Reports (all protected by JWT auth)
+- `GET /api/reports/summary` — Aggregate summary report with total/active/retired counts, financial cost, and category distribution
+
 ### Headers
 All protected endpoints require:
 ```
