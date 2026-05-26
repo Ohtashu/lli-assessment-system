@@ -1,8 +1,10 @@
 const dotenv = require('dotenv');
+
+// Load environment variables FIRST, before importing any config that uses them
+dotenv.config();
+
 const app = require('./server');
 const pool = require('./config/db');
-
-dotenv.config();
 
 const port = process.env.PORT || 3001;
 

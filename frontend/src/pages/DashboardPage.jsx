@@ -95,8 +95,8 @@ export default function DashboardPage() {
       name: asset.name,
       category: asset.category,
       status: asset.status,
-      location: asset.location,
-      value: asset.value,
+      assigned_to: asset.assigned_to,
+      cost: asset.cost,
     })
     setModalVisible(true)
   }
@@ -172,16 +172,16 @@ export default function DashboardPage() {
       },
     },
     {
-      title: 'Location',
-      dataIndex: 'location',
-      key: 'location',
+      title: 'Assigned To',
+      dataIndex: 'assigned_to',
+      key: 'assigned_to',
       ellipsis: true,
     },
     {
-      title: 'Value',
-      dataIndex: 'value',
-      key: 'value',
-      render: (value) => `$${value?.toLocaleString() || 0}`,
+      title: 'Cost',
+      dataIndex: 'cost',
+      key: 'cost',
+      render: (cost) => `$${cost?.toLocaleString() || 0}`,
       width: 100,
     },
     {
@@ -361,13 +361,13 @@ export default function DashboardPage() {
             <Select placeholder="Select a status" options={STATUSES} />
           </Form.Item>
 
-          <Form.Item label="Assigned To" name="location">
+          <Form.Item label="Assigned To" name="assigned_to">
             <Input placeholder="e.g., John Doe / IT Department" />
           </Form.Item>
 
           <Form.Item
-            label="Cost / Value"
-            name="value"
+            label="Cost"
+            name="cost"
             rules={[{ required: true, message: 'Cost is required' }]}
           >
             <InputNumber

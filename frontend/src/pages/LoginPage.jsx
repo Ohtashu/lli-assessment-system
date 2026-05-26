@@ -15,15 +15,20 @@ export default function LoginPage() {
     setLoading(true)
     setError(null)
 
-    const result = await login(values.email, values.password)
+    try {
+      await login(values.email, values.password)
+      navigate('/dashboard', { replace: true })
+    } catch (err) {
+      const errorMessage =
+        err.response?.data?.message ||
+        err.response?.data?.error ||
+        err.message ||
+        'Login failed. Please try again.'
 
-    if (result.success) {
-      navigate('/dashboard')
-    } else {
-      setError(result.error || 'Login failed. Please try again.')
+      setError(errorMessage)
+    } finally {
+      setLoading(false)
     }
-
-    setLoading(false)
   }
 
   return (
@@ -45,7 +50,12 @@ export default function LoginPage() {
         )}
 
         <Spin spinning={loading}>
-          <Form form={form} layout="vertical" onFinish={onFinish}>
+          <Form
+            form={form}
+            layout="vertical"
+            onFinish={onFinish}
+            onSubmitCapture={(event) => event.preventDefault()}
+          >
             <Form.Item
               label="Email"
               name="email"
@@ -88,7 +98,7 @@ export default function LoginPage() {
         </Spin>
 
         <p className="login-footer">
-          For demo purposes, use test credentials from your database.
+          
         </p>
       </Card>
     </div>

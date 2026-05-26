@@ -1,9 +1,10 @@
+const sql = require('mssql');
 const pool = require('../config/db');
 
 const getAllAssets = async (filters = {}) => {
   try {
     const request = pool.request();
-    let query = 'SELECT id, asset_tag, name, category, status, location, value, created_at, updated_at FROM Assets WHERE 1=1';
+    let query = 'SELECT id, asset_tag, name, category, status, assigned_to, cost, created_at, updated_at FROM Assets WHERE 1=1';
 
     if (filters.category) {
       query += ' AND category = @category';
@@ -28,7 +29,7 @@ const getAssetById = async (id) => {
     const request = pool.request();
     const result = await request
       .input('id', id)
-      .query('SELECT id, asset_tag, name, category, status, location, value, created_at, updated_at FROM Assets WHERE id = @id');
+      .query('SELECT id, asset_tag, name, category, status, assigned_to, cost, created_at, updated_at FROM Assets WHERE id = @id');
     return result.recordset[0] || null;
   } catch (err) {
     console.error('[AssetService] getAssetById error:', err);
@@ -38,17 +39,20 @@ const getAssetById = async (id) => {
 
 const createAsset = async (assetData) => {
   try {
+    const assignedToValue = assetData.assigned_to ?? null;
+    const costValue = Number.isFinite(Number(assetData.cost)) ? Number(assetData.cost) : 0;
+
     const request = pool.request();
     const result = await request
-      .input('asset_tag', assetData.asset_tag)
-      .input('name', assetData.name)
-      .input('category', assetData.category)
-      .input('status', assetData.status || 'Active')
-      .input('location', assetData.location || null)
-      .input('value', assetData.value || 0)
+      .input('asset_tag', sql.VarChar(50), assetData.asset_tag)
+      .input('name', sql.VarChar(100), assetData.name)
+      .input('category', sql.VarChar(50), assetData.category)
+      .input('status', sql.VarChar(20), assetData.status || 'Active')
+      .input('assigned_to', sql.VarChar(100), assignedToValue)
+      .input('cost', sql.Decimal(10, 2), costValue)
       .query(`
-        INSERT INTO Assets (asset_tag, name, category, status, location, value)
-        VALUES (@asset_tag, @name, @category, @status, @location, @value);
+        INSERT INTO Assets (asset_tag, name, category, status, assigned_to, cost)
+        VALUES (@asset_tag, @name, @category, @status, @assigned_to, @cost);
         SELECT CAST(SCOPE_IDENTITY() as int) as id;
       `);
     return result.recordset[0].id;
@@ -76,13 +80,13 @@ const updateAsset = async (id, updates) => {
       updateFields.push('status = @status');
       request.input('status', updates.status);
     }
-    if (updates.location !== undefined) {
-      updateFields.push('location = @location');
-      request.input('location', updates.location);
+    if (updates.assigned_to !== undefined) {
+      updateFields.push('assigned_to = @assigned_to');
+      request.input('assigned_to', updates.assigned_to);
     }
-    if (updates.value !== undefined) {
-      updateFields.push('value = @value');
-      request.input('value', updates.value);
+    if (updates.cost !== undefined) {
+      updateFields.push('cost = @cost');
+      request.input('cost', updates.cost);
     }
 
     if (updateFields.length === 0) return false;

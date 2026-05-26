@@ -10,7 +10,7 @@ const getSummaryReport = async () => {
         SUM(CASE WHEN status = 'Active' THEN 1 ELSE 0 END) as activeAssetsCount,
         SUM(CASE WHEN status = 'In Repair' THEN 1 ELSE 0 END) as maintenanceAssetsCount,
         SUM(CASE WHEN status = 'Retired' THEN 1 ELSE 0 END) as retiredAssetsCount,
-        ISNULL(SUM(value), 0) as totalFinancialCost
+        ISNULL(SUM(cost), 0) as totalFinancialCost
       FROM Assets
     `;
 

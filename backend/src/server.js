@@ -32,13 +32,14 @@ app.use((err, req, res, next) => {
     : err.message;
 
   res.status(statusCode).json({
+    message,
     error: message,
     ...(process.env.NODE_ENV !== 'production' && { stack: err.stack }),
   });
 });
 
 app.use((req, res) => {
-  res.status(404).json({ error: 'Not Found' });
+  res.status(404).json({ message: 'Not Found', error: 'Not Found' });
 });
 
 module.exports = app;

@@ -35,7 +35,16 @@ const getAsset = async (req, res, next) => {
 
 const createAsset = async (req, res, next) => {
   try {
-    const { asset_tag, name, category, status, location, value } = req.body;
+    const {
+      asset_tag,
+      name,
+      category,
+      status,
+      assigned_to,
+      cost,
+      location,
+      value,
+    } = req.body;
 
     if (!asset_tag || !name || !category) {
       return res.status(400).json({ error: 'asset_tag, name, and category are required' });
@@ -46,8 +55,8 @@ const createAsset = async (req, res, next) => {
       name,
       category,
       status,
-      location,
-      value,
+      assigned_to: assigned_to ?? location,
+      cost: cost ?? value,
     });
 
     res.status(201).json({ success: true, data: { id, asset_tag, name, category } });
