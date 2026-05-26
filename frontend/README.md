@@ -5,7 +5,10 @@
 - `src/main.jsx` — Entry point wrapped with AuthProvider
 - `src/services/api.js` — Axios instance with JWT interceptor
 - `src/context/AuthContext.jsx` — Auth state management (login/logout/token)
-- `src/App.jsx` — Root component
+- `src/pages/LoginPage.jsx` — Login form with validation
+- `src/pages/DashboardPage.jsx` — Main dashboard with metrics and asset table
+- `src/components/ProtectedRoute.jsx` — Route guard for authenticated pages
+- `src/App.jsx` — Router and route definitions
 
 ## Setup
 
@@ -79,3 +82,21 @@ const fetchAssets = async () => {
   }
 }
 ```
+
+## Pages
+
+### Login Page (`/login`)
+- Email and password form validation
+- Error alerts for failed authentication
+- Loading spinner during submission
+- Auto-redirect to dashboard if already authenticated
+
+### Dashboard Page (`/dashboard`)
+- System header with logout button
+- **Metrics Cards:** Total Assets, Active, In Repair, Total Investment Cost
+- **Asset Inventory Table:** CRUD ready with:
+  - Asset Tag, Name, Category, Status, Location, Value columns
+  - Edit and Delete action buttons
+  - Responsive table design
+- Auto-fetches data on page load from API
+- Handles loading and error states
