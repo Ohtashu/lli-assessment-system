@@ -42,3 +42,21 @@ Server starts on `http://localhost:3001` by default.
 ```bash
 curl http://localhost:3001/health
 ```
+
+## API Endpoints
+
+### Authentication
+- `POST /api/auth/login` — Login and receive JWT token
+
+### Assets (all protected by JWT auth)
+- `GET /api/assets` — Retrieve all assets with optional filters (?category=X&status=Y)
+- `POST /api/assets` — Create new asset
+- `GET /api/assets/:id` — Get asset by ID
+- `PUT /api/assets/:id` — Update asset
+- `DELETE /api/assets/:id` — Delete asset
+
+### Headers
+All protected endpoints require:
+```
+Authorization: Bearer <JWT_TOKEN>
+```

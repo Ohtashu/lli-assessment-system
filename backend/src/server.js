@@ -2,6 +2,7 @@ const express = require('express');
 const cors = require('cors');
 const pool = require('./config/db');
 const authRoutes = require('./routes/authRoutes');
+const assetRoutes = require('./routes/assetRoutes');
 
 const app = express();
 
@@ -18,6 +19,7 @@ app.get('/health', (req, res) => {
 });
 
 app.use('/api/auth', authRoutes);
+app.use('/api/assets', assetRoutes);
 
 app.use((err, req, res, next) => {
   console.error('[Error]', err);
